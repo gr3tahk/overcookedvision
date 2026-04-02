@@ -58,7 +58,28 @@ def bfs_next_action(mdp, state, player_id, goal_locs):
             if npos in goal_locs:
                 return step
             terrain = mdp.get_terrain_type_at_pos(npos)
+            # Allow passing through other player's position if no other path
             if terrain == ' ' and npos != other_pos:
+                visited.add(npos)
+                queue.append((npos, step))
+    
+    # If blocked by other player, try ignoring them
+    queue = deque([(my_pos, None)])
+    visited = {my_pos}
+    while queue:
+        pos, first_step = queue.popleft()
+        for dc, dr in dirs:
+            npos = (pos[0]+dc, pos[1]+dr)
+            cx, cy = npos
+            if cx < 0 or cy < 0 or cx >= mdp.width or cy >= mdp.height:
+                continue
+            if npos in visited:
+                continue
+            step = first_step if first_step is not None else (dc, dr)
+            if npos in goal_locs:
+                return step
+            terrain = mdp.get_terrain_type_at_pos(npos)
+            if terrain == ' ':  # ignore other player blocking
                 visited.add(npos)
                 queue.append((npos, step))
     return Action.STAY
@@ -86,20 +107,23 @@ def get_pot_info(state, mdp):
             needs_onions.append(pot_pos)
     return any_ready, needs_onions, needs_cooking, ready_locs
 
-def compute_goal(state, mdp, player_id, current_goal, llm_call_fn):
-    """
-    Determine goal with inventory-based persistence:
-    - If holding onion, must place it (don't replan)
-    - If holding dish and soup ready, must load it
-    - If holding soup, must deliver it
-    - Otherwise replan
-    """
+def get_assigned_onion(mdp, player_id):
+    """Assign each player to a different onion dispenser to avoid blocking."""
+    onion_locs = mdp.get_onion_dispenser_locations()
+    if len(onion_locs) == 1:
+        return onion_locs
+    # Player 0 gets left/first dispenser, Player 1 gets right/last
+    if player_id == 0:
+        return [min(onion_locs, key=lambda x: x[0])]
+    else:
+        return [max(onion_locs, key=lambda x: x[0])]
+
+def compute_goal(state, mdp, player_id, llm_call_fn):
     state_dict = state.to_dict()
     held = state_dict['players'][player_id]['held_object']
     held_name = held['name'] if held else 'nothing'
     any_ready, needs_onions, needs_cooking, ready_locs = get_pot_info(state, mdp)
 
-    # Hard inventory-based rules — never deviate from these
     if held_name == 'onion':
         return 'place_onion' if needs_onions else 'wait'
     if held_name == 'dish':
@@ -107,11 +131,10 @@ def compute_goal(state, mdp, player_id, current_goal, llm_call_fn):
     if held_name in ['soup', 'soup in plate']:
         return 'deliver_soup'
 
-    # Holding nothing — decide what to do next
     if needs_cooking:
         return 'start_cooking'
     if any_ready:
-        return llm_call_fn()  # Only LLM decision point
+        return llm_call_fn()
     if needs_onions:
         return 'get_onion'
     return 'wait'
@@ -147,14 +170,15 @@ Reply with one of: get_plate, get_onion"""
         return 'get_plate'
 
 def goal_to_action(goal, state, mdp, player_id):
-    onion_locs    = mdp.get_onion_dispenser_locations()
     plate_locs    = mdp.get_dish_dispenser_locations()
     delivery_locs = mdp.get_serving_locations()
     pot_locs      = list(mdp.get_pot_locations())
     _, needs_onions, needs_cooking, ready_locs = get_pot_info(state, mdp)
 
     if goal == 'get_onion':
-        return bfs_next_action(mdp, state, player_id, onion_locs)
+        # Use assigned dispenser to avoid both agents going to same place
+        assigned = get_assigned_onion(mdp, player_id)
+        return bfs_next_action(mdp, state, player_id, assigned)
     elif goal == 'place_onion':
         targets = needs_onions if needs_onions else pot_locs
         return bfs_next_action(mdp, state, player_id, targets)
@@ -177,7 +201,7 @@ class LLMAgent:
 
     def act(self, state, mdp):
         llm_fn = lambda: get_llm_goal(state, mdp, self.player_id)
-        goal = compute_goal(state, mdp, self.player_id, self.current_goal, llm_fn)
+        goal = compute_goal(state, mdp, self.player_id, llm_fn)
         if goal != self.current_goal:
             print(f"    P{self.player_id}: {self.current_goal} -> {goal}")
             self.current_goal = goal
