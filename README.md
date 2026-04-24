@@ -41,10 +41,17 @@ Run a small suite:
 ```bash
 uv run python benchmark.py --pair llm-llm --openai-model gpt-5.4 --trials 3 --max-ticks 60 --experiment-output results/llm_llm.json
 uv run python benchmark.py --pair vlm-vlm --vision-model gpt-5.4 --trials 3 --max-ticks 60 --experiment-output results/vlm_vlm.json
+uv run python benchmark.py --pair llm-llm --all-tasks --trials 3 --max-ticks 60 --experiment-output results/llm_llm_all_tasks.json
 uv run python -m overcooked_benchmark.summarize results/llm_llm.json results/vlm_vlm.json
 ```
 
 Suite runs also print the same summary table automatically.
+
+Available task IDs:
+
+- `cramped_room_single_delivery` - baseline one-soup task.
+- `cramped_room_divide_and_plate` - one player loads onions, teammate plates and serves.
+- `cramped_room_balanced_handoff` - both players contribute onions before a dish-and-serve handoff.
 
 ## Collab-Overcooked Metrics
 

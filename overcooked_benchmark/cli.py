@@ -13,9 +13,11 @@ from overcooked_benchmark.config import (
 from overcooked_benchmark.runners.paired import run_agent_pair
 from overcooked_benchmark.runners.suite import run_experiment_suite
 from overcooked_benchmark.summarize import flatten_run, format_summary_table, summarize_rows
+from overcooked_benchmark.tasks import list_task_ids
 
 
 def parse_args():
+    task_ids = list_task_ids()
     parser = argparse.ArgumentParser(description="Run paired LLM/VLM Overcooked benchmarks.")
     parser.add_argument(
         "--pair",
@@ -24,7 +26,13 @@ def parse_args():
         help="Agent pair to benchmark.",
     )
     parser.add_argument("--layout", choices=LAYOUTS, help="Run a single layout and task trace.")
-    parser.add_argument("--task-id", default="cramped_room_single_delivery", help="Task metadata to use for trajectory metrics.")
+    parser.add_argument(
+        "--task-id",
+        choices=task_ids,
+        default="cramped_room_single_delivery",
+        help="Task metadata to use for trajectory metrics.",
+    )
+    parser.add_argument("--all-tasks", action="store_true", help="Run the suite over every defined task instead of a single --task-id.")
     parser.add_argument("--backend", choices=["openai", "local"], default="openai", help="Inference backend for llm-llm agents.")
     parser.add_argument("--openai-model", default=DEFAULT_OPENAI_MODEL, help="OpenAI text model for --pair llm-llm.")
     parser.add_argument("--vision-model", default=DEFAULT_VISION_MODEL, help="OpenAI vision model for --pair vlm-vlm.")
@@ -54,6 +62,7 @@ def print_summary(summary: dict):
 
 def main():
     args = parse_args()
+    task_ids = list_task_ids()
     if args.layout:
         result = run_agent_pair(
             pair=args.pair,
@@ -80,7 +89,7 @@ def main():
 
     aggregate = run_experiment_suite(
         pair=args.pair,
-        task_ids=[args.task_id],
+        task_ids=task_ids if args.all_tasks else [args.task_id],
         trials=args.trials,
         max_ticks=args.max_ticks,
         backend=args.backend,
