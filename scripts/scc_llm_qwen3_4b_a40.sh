@@ -2,6 +2,7 @@
 #$ -P cs585
 #$ -N overcooked_qwen3_4b
 #$ -l h_rt=04:00:00
+#$ -pe omp 4
 #$ -l gpus=1
 #$ -l gpu_type=A40
 #$ -j y
@@ -10,7 +11,9 @@
 set -euo pipefail
 
 module load miniconda
-source "$(conda info --base)/etc/profile.d/conda.sh"
+module load academic-ml/spring-2026
+echo "CONDA_BASE=$(conda info --base)"
+conda info --envs
 conda activate spring-2026-pyt
 
 cd "$SGE_O_WORKDIR"
