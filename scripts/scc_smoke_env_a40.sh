@@ -14,6 +14,8 @@
 #$ -l gpus=1
 #$ -l gpu_type=A40
 
+set -e
+
 # Use the SCC academic machine learning environment
 module load miniconda
 module load academic-ml/spring-2026
