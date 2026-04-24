@@ -1,5 +1,6 @@
 __pycache__/
 *.pyc
+*.egg-info/
 game_logs/
 game_trajectories/
 *.npy

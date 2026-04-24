@@ -1,0 +1,17 @@
+[project]
+name = "overcooked-benchmark"
+version = "0.1.0"
+description = "Paired LLM/VLM Overcooked benchmark with trajectory metrics."
+requires-python = ">=3.11"
+dependencies = [
+    "numpy",
+    "openai",
+    "overcooked-ai",
+    "pillow",
+]
+
+[project.scripts]
+overcooked-benchmark = "overcooked_benchmark.cli:main"
+
+[tool.uv]
+package = true

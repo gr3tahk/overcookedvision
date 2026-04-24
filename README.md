@@ -5,26 +5,36 @@ Comparing VLM and LLM agents in the Overcooked cooperative cooking environment.
 ## Setup
 ```bash
 uv venv --python 3.11
-source .venv/bin/activate
-uv pip install overcooked-ai openai pillow numpy
+uv sync
 ```
 
-## Running LLM Baseline
+## Paired LLM/VLM Benchmark
+
+The benchmark harness supports low-level paired agents with the same action space:
+
+- `llm-llm`: both agents receive symbolic text state.
+- `vlm-vlm`: both agents receive a rendered board image plus the action list.
+- `scripted-scripted`: deterministic local smoke-test agents, no API key needed.
+
+Run a local smoke trace:
+
+```bash
+uv run python benchmark.py --pair scripted-scripted --layout cramped_room --max-ticks 8 --collect-trajectory
+```
+
+Run one LLM or VLM trace:
+
 ```bash
 export OPENAI_API_KEY=your_key_here
-python benchmark.py
+uv run python benchmark.py --pair llm-llm --layout cramped_room --max-ticks 80 --collect-trajectory
+uv run python benchmark.py --pair vlm-vlm --layout cramped_room --max-ticks 80 --collect-trajectory --vision-model gpt-4o
 ```
 
-## Running With A Local Model
-```bash
-pip install torch transformers accelerate sentencepiece
-python benchmark.py --backend local
-```
-
-Optional: override the default local model.
+Run a small suite:
 
 ```bash
-python benchmark.py --backend local --local-model Qwen/Qwen2.5-3B-Instruct
+uv run python benchmark.py --pair llm-llm --trials 3 --max-ticks 80 --experiment-output results/llm_llm.json
+uv run python benchmark.py --pair vlm-vlm --trials 3 --max-ticks 80 --experiment-output results/vlm_vlm.json
 ```
 
 ## Collab-Overcooked Metrics
@@ -39,13 +49,20 @@ This repo implements the trajectory metrics from `colab.pdf`:
 Run a local trajectory with metrics:
 
 ```bash
-python benchmark.py --layout cramped_room --collect-trajectory --print-metrics
+uv run python benchmark.py --pair scripted-scripted --layout cramped_room --collect-trajectory
 ```
 
 The replay JSON includes `symbolic_actions`, `agent_histories`, and `metrics`, so LLM-LLM and VLM-VLM runs can be compared using the same output schema.
 
+The paired runner records score, success, ticks, TES, PC, invalid action count, symbolic action history, agent messages, and prompt/response logs.
+
 ## Project Structure
-- `benchmark.py` — LLM agent and game loop
-- `metrics.py` — TES, ITES, PC, IC, and RC metric helpers
-- `vlm_agent.py` — VLM agent (Qwen-VL) [Josh]
-- `test_llm.py` — quick test scripts
+- `benchmark.py` — thin CLI shim
+- `overcooked_benchmark/agents/` — common agent interface plus OpenAI text/vision and scripted agents
+- `overcooked_benchmark/runners/` — paired-agent and suite runners
+- `overcooked_benchmark/tasks.py` — task definitions and reference trajectories
+- `overcooked_benchmark/metrics.py` — TES, ITES, PC, IC, and RC metric helpers
+- `overcooked_benchmark/symbolic.py` — transition-to-symbolic-action extraction
+- `overcooked_benchmark/traces.py` — replay JSON serialization
+- `overcooked_benchmark/rendering.py` — board renderer used for VLM observations
+- `tests/` — unit and smoke tests
