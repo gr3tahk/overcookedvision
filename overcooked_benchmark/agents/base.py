@@ -25,6 +25,7 @@ class AgentDecision:
     player_name: str
     action: str
     message: str = ""
+    plan: str = ""
     raw_response: str = ""
     prompt: str = ""
     valid: bool = True
@@ -41,6 +42,7 @@ class AgentDecision:
             "changed": False,
             "action": self.action,
             "message": self.message,
+            "plan": self.plan,
             "rawResponse": self.raw_response,
             "prompt": self.prompt,
             "valid": self.valid,
@@ -57,7 +59,10 @@ class AgentObservation:
     player_id: int
     task: dict[str, Any]
     teammate_message: str = ""
+    current_plan: str = ""
+    phase_hint: str = ""
     action_feedback: str = "No previous action yet."
+    no_op_warning: str = ""
     recent_events: list[dict[str, Any]] = field(default_factory=list)
 
 
@@ -72,7 +77,7 @@ class BenchmarkAgent:
         raise NotImplementedError
 
 
-def parse_agent_response(text: str) -> tuple[str, str, bool, str | None]:
+def parse_agent_response(text: str) -> tuple[str, str, str, bool, str | None]:
     raw = text.strip()
     payload = None
     try:
@@ -88,11 +93,13 @@ def parse_agent_response(text: str) -> tuple[str, str, bool, str | None]:
     if isinstance(payload, dict):
         action = str(payload.get("action", "")).strip().lower()
         message = str(payload.get("message", "")).strip()
+        plan = str(payload.get("plan", "")).strip()
     else:
         lowered = raw.lower()
         action = next((candidate for candidate in LOW_LEVEL_ACTIONS if re.search(rf"\b{candidate}\b", lowered)), "")
         message = ""
+        plan = ""
 
     if action not in LOW_LEVEL_ACTIONS:
-        return "stay", message, False, f"Could not parse valid action from response: {raw[:160]}"
-    return action, message, True, None
+        return "stay", message, plan, False, f"Could not parse valid action from response: {raw[:160]}"
+    return action, message, plan, True, None

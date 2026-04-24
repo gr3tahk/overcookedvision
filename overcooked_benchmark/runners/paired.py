@@ -9,6 +9,7 @@ from overcooked_benchmark.agents import AgentObservation, OpenAITextAgent, OpenA
 from overcooked_benchmark.config import DEFAULT_OPENAI_MODEL, DEFAULT_VISION_MODEL, PLAYER_NAMES
 from overcooked_benchmark.evaluation import evaluate_task_trajectory
 from overcooked_benchmark.openai_client import get_openai_client
+from overcooked_benchmark.phase import task_phase_hint
 from overcooked_benchmark.symbolic import classify_player_action
 from overcooked_benchmark.tasks import get_task_by_id
 from overcooked_benchmark.traces import (
@@ -54,6 +55,7 @@ def _decision_trace(agent) -> dict[str, Any]:
             "changed": False,
             "action": "stay",
             "message": "",
+            "plan": "",
             "rawResponse": "",
             "valid": False,
             "invalidReason": "agent did not produce a decision",
@@ -107,6 +109,19 @@ def _build_action_feedback(
     return "; ".join(parts)
 
 
+def _is_no_op_feedback(feedback: str) -> bool:
+    return "NO-OP" in feedback
+
+
+def _build_no_op_warning(action: str | None, count: int) -> str:
+    if not action or count < 2:
+        return ""
+    return (
+        f"You have tried `{action}` {count} times in a row with no effect. "
+        "Do not repeat it now; move or turn to face a useful station first."
+    )
+
+
 def run_agent_pair(
     pair: str,
     layout_name: str,
@@ -132,6 +147,9 @@ def run_agent_pair(
     prompt_logs: list[dict[str, Any]] = []
     ticks_run = 0
     action_feedbacks = ["No previous action yet." for _ in agents]
+    plans = ["" for _ in agents]
+    repeated_no_op_actions: list[str | None] = [None for _ in agents]
+    repeated_no_op_counts = [0 for _ in agents]
 
     trajectory = None
     if collect_trajectory:
@@ -159,6 +177,12 @@ def run_agent_pair(
         ticks_run = tick + 1
         before_state = state
         feedbacks_seen = list(action_feedbacks)
+        plans_seen = list(plans)
+        phase_hint = task_phase_hint(state, mdp)
+        no_op_warnings_seen = [
+            _build_no_op_warning(repeated_no_op_actions[player_id], repeated_no_op_counts[player_id])
+            for player_id in range(len(agents))
+        ]
         observations = [
             AgentObservation(
                 state=state,
@@ -168,7 +192,10 @@ def run_agent_pair(
                 player_id=player_id,
                 task=task,
                 teammate_message=messages[1 - player_id],
+                current_plan=plans_seen[player_id],
+                phase_hint=phase_hint,
                 action_feedback=feedbacks_seen[player_id],
+                no_op_warning=no_op_warnings_seen[player_id],
             )
             for player_id in range(len(agents))
         ]
@@ -176,6 +203,10 @@ def run_agent_pair(
         decisions = [_decision_trace(agent) for agent in agents]
         invalid_action_count += sum(1 for decision in decisions if not decision.get("valid", True))
         messages = [decision.get("message", "") for decision in decisions]
+        plans = [
+            decision.get("plan", "").strip() or plans[player_id]
+            for player_id, decision in enumerate(decisions)
+        ]
 
         state, info = mdp.get_state_transition(state, actions)
         score_delta = int(sum(info["sparse_reward_by_agent"]))
@@ -216,6 +247,17 @@ def run_agent_pair(
             )
             for player_id in range(len(agents))
         ]
+        for player_id, feedback in enumerate(action_feedbacks):
+            action = decisions[player_id]["action"]
+            if _is_no_op_feedback(feedback):
+                if repeated_no_op_actions[player_id] == action:
+                    repeated_no_op_counts[player_id] += 1
+                else:
+                    repeated_no_op_actions[player_id] = action
+                    repeated_no_op_counts[player_id] = 1
+            else:
+                repeated_no_op_actions[player_id] = None
+                repeated_no_op_counts[player_id] = 0
         if collect_trajectory:
             for decision in decisions:
                 player_id = decision["playerId"]
@@ -226,8 +268,12 @@ def run_agent_pair(
                         "playerName": decision["playerName"],
                         "action": decision["action"],
                         "message": decision.get("message", ""),
+                        "planSeen": plans_seen[player_id],
+                        "planAfter": plans[player_id],
+                        "phaseHint": phase_hint,
                         "feedbackSeen": feedbacks_seen[player_id],
                         "feedbackAfter": action_feedbacks[player_id],
+                        "noOpWarningSeen": no_op_warnings_seen[player_id],
                         "prompt": decision.get("prompt", ""),
                         "rawResponse": decision.get("rawResponse", ""),
                         "valid": decision.get("valid", True),

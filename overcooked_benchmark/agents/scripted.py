@@ -23,7 +23,8 @@ class ScriptedAgent(BenchmarkAgent):
             player_name=self.player_name,
             action=action,
             message="",
-            raw_response=json.dumps({"action": action, "message": ""}),
+            plan="scripted smoke test path",
+            raw_response=json.dumps({"action": action, "message": "", "plan": "scripted smoke test path"}),
             valid=True,
         )
         return ACTION_TO_OVERCOOKED[action]

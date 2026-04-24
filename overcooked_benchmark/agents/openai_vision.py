@@ -31,12 +31,13 @@ class OpenAIVisionAgent(BenchmarkAgent):
             max_tokens=120,
         )
         raw = response.choices[0].message.content or ""
-        action, message, valid, invalid_reason = parse_agent_response(raw)
+        action, message, plan, valid, invalid_reason = parse_agent_response(raw)
         self.last_decision = AgentDecision(
             player_id=self.player_id,
             player_name=self.player_name,
             action=action,
             message=message,
+            plan=plan,
             raw_response=raw,
             prompt=prompt,
             valid=valid,

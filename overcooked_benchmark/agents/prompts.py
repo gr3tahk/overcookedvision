@@ -92,16 +92,21 @@ def build_action_prompt(observation: AgentObservation, include_text_state: bool)
 Task: {task.get('description', 'deliver onion soup')}.
 Teammate: {other_name}.
 Teammate's latest message: {teammate}
+Shared task-phase hint: {observation.phase_hint}
+Your current plan from last turn: {observation.current_plan or "[none]"}
 Your previous action feedback: {observation.action_feedback}
+Repeated no-op warning: {observation.no_op_warning or "[none]"}
 {text_state_instruction}
 Rules:
 - Need 3 onions in a pot, then interact to cook if needed.
 - When soup is ready, pick up a dish, interact with the pot to pick up soup, then deliver at the serve tile.
 - If your facing tile is the station you need and `interact` is legal, choose `interact`.
 - If your previous action was a no-op, do not repeat it unless the state changed to make it useful.
+- Maintain a short plan across turns. Update it when feedback shows the plan is wrong or incomplete.
+- If you see a repeated no-op warning, change position or orientation before trying the same interaction again.
 - To use a station, stand on an adjacent floor tile and face it. Moving into a station tile itself is impossible.
 - In `cramped_room`, useful adjacent floor tiles are: onion dispensers from (1,1) facing west or (3,1) facing east; pot from (2,1) facing north; dish from (1,2) facing south; serve from (3,2) facing south.
 - You and your teammate act at the same time. Avoid blocking each other.
 - Valid actions are exactly: {', '.join(LOW_LEVEL_ACTIONS)}.
-- Respond with JSON only: {{"action":"up|down|left|right|stay|interact","message":"short optional teammate message"}}.
+- Respond with JSON only: {{"action":"up|down|left|right|stay|interact","message":"short optional teammate message","plan":"short current plan"}}.
 Choose the single best next low-level action."""
