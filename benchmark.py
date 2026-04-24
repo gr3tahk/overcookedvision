@@ -11,6 +11,8 @@ import numpy as np
 from overcooked_ai_py.mdp.actions import Action
 from overcooked_ai_py.mdp.overcooked_mdp import OvercookedGridworld
 
+from metrics import capability_rate, progress_completeness, score_against_references
+
 LAYOUTS = [
     "cramped_room",
     "asymmetric_advantages",
@@ -70,6 +72,110 @@ TERRAIN_THEME = {
     "P": "pot",
     "S": "serve",
 }
+TASKS = [
+    {
+        "task_id": "cramped_room_single_delivery",
+        "layout": "cramped_room",
+        "description": "Deliver one onion soup in the cramped_room layout.",
+        "reference_trajectories": [
+            {
+                "id": "single_agent_delivery",
+                "actions": [
+                    "pickup_onion",
+                    "place_onion_in_pot",
+                    "pickup_onion",
+                    "place_onion_in_pot",
+                    "pickup_onion",
+                    "place_onion_in_pot",
+                    "pickup_dish",
+                    "pickup_soup",
+                    "deliver_soup",
+                ],
+            },
+            {
+                "id": "two_agent_split",
+                "agent_references": {
+                    "0": [
+                        {
+                            "id": "p0_onion_focus",
+                            "actions": [
+                                "pickup_onion",
+                                "place_onion_in_pot",
+                                "pickup_onion",
+                                "place_onion_in_pot",
+                            ],
+                        }
+                    ],
+                    "1": [
+                        {
+                            "id": "p1_onion_plate_delivery",
+                            "actions": [
+                                "pickup_onion",
+                                "place_onion_in_pot",
+                                "pickup_dish",
+                                "pickup_soup",
+                                "deliver_soup",
+                            ],
+                        }
+                    ],
+                },
+            },
+        ],
+        "agent_references": {
+            "0": [
+                {
+                    "id": "p0_all_steps",
+                    "actions": [
+                        "pickup_onion",
+                        "place_onion_in_pot",
+                        "pickup_onion",
+                        "place_onion_in_pot",
+                        "pickup_onion",
+                        "place_onion_in_pot",
+                        "pickup_dish",
+                        "pickup_soup",
+                        "deliver_soup",
+                    ],
+                },
+                {
+                    "id": "p0_onion_focus",
+                    "actions": [
+                        "pickup_onion",
+                        "place_onion_in_pot",
+                        "pickup_onion",
+                        "place_onion_in_pot",
+                    ],
+                },
+            ],
+            "1": [
+                {
+                    "id": "p1_all_steps",
+                    "actions": [
+                        "pickup_onion",
+                        "place_onion_in_pot",
+                        "pickup_onion",
+                        "place_onion_in_pot",
+                        "pickup_onion",
+                        "place_onion_in_pot",
+                        "pickup_dish",
+                        "pickup_soup",
+                        "deliver_soup",
+                    ],
+                },
+                {
+                    "id": "p1_onion_plate_delivery",
+                    "actions": [
+                        "pickup_onion",
+                        "place_onion_in_pot",
+                        "pickup_dish",
+                        "pickup_soup",
+                        "deliver_soup",
+                    ],
+                },
+            ],
+        },
+    }
+]
 
 
 def configure_llm_backend(
@@ -81,6 +187,115 @@ def configure_llm_backend(
     BACKEND = backend
     OPENAI_MODEL = openai_model
     LOCAL_MODEL = local_model
+
+
+def load_tasks() -> list[dict[str, Any]]:
+    return TASKS
+
+
+def get_task_by_id(task_id: str) -> dict[str, Any]:
+    for task in TASKS:
+        if task["task_id"] == task_id:
+            return task
+    raise KeyError(f"Unknown task id: {task_id}")
+
+
+def _state_to_dict(state):
+    return state if isinstance(state, dict) else state.to_dict()
+
+
+def _held_name(player: dict[str, Any]) -> str:
+    held = player.get("held_object")
+    return held.get("name", "nothing") if held else "nothing"
+
+
+def _pot_ingredient_count(pots: dict[str, Any]) -> int:
+    count = 0
+    for pot in pots.values() if isinstance(pots, dict) else pots:
+        ingredients = pot.get("ingredients", [])
+        count += len(ingredients)
+    return count
+
+
+def _event_action(event_name: str) -> str | None:
+    event_actions = {
+        "onion_pickup": "pickup_onion",
+        "potting_onion": "place_onion_in_pot",
+        "dish_pickup": "pickup_dish",
+        "soup_pickup": "pickup_soup",
+        "soup_delivery": "deliver_soup",
+    }
+    return event_actions.get(event_name)
+
+
+def classify_player_action(
+    before_state,
+    after_state,
+    player_id: int,
+    event_infos: dict[str, Any] | None = None,
+    action=None,
+    *_,
+) -> str | None:
+    """Map a transition to a symbolic action for TES/ITES scoring."""
+    event_infos = event_infos or {}
+    for event_name, flags in event_infos.items():
+        if player_id < len(flags) and flags[player_id]:
+            symbolic_action = _event_action(event_name)
+            if symbolic_action:
+                return symbolic_action
+
+    before = _state_to_dict(before_state)
+    after = _state_to_dict(after_state)
+    before_player = before["players"][player_id]
+    after_player = after["players"][player_id]
+    before_held = _held_name(before_player)
+    after_held = _held_name(after_player)
+
+    if before_held == "nothing" and after_held == "onion":
+        return "pickup_onion"
+    if before_held == "nothing" and after_held == "dish":
+        return "pickup_dish"
+    if before_held == "dish" and after_held in {"soup", "soup in plate"}:
+        return "pickup_soup"
+
+    before_pots = before.get("pots", {})
+    after_pots = after.get("pots", {})
+    if before_held == "onion" and after_held == "nothing":
+        if _pot_ingredient_count(after_pots) > _pot_ingredient_count(before_pots):
+            return "place_onion_in_pot"
+
+    return None
+
+
+def evaluate_task_trajectory(
+    task: dict[str, Any],
+    executed_actions: list[str],
+    agent_histories: dict[str | int, list[str]] | None = None,
+    collaboration_events: dict[str, list[dict[str, Any]]] | None = None,
+    beta: float = 1.0,
+) -> dict[str, Any]:
+    references = task.get("reference_trajectories", [])
+    flat_references = [reference for reference in references if "actions" in reference]
+    result = score_against_references(executed_actions, flat_references, beta=beta)
+
+    if agent_histories is not None:
+        references_by_agent = task.get("agent_references", {})
+        result["progress_completeness"] = progress_completeness(agent_histories, references_by_agent, beta=beta)
+
+    collaboration_events = collaboration_events or {}
+    if "initiations" in collaboration_events:
+        result["initiating_capability"] = capability_rate(
+            collaboration_events["initiations"],
+            task.get("agent_references", {}),
+            beta=beta,
+        )
+    if "responses" in collaboration_events:
+        result["responding_capability"] = capability_rate(
+            collaboration_events["responses"],
+            task.get("agent_references", {}),
+            beta=beta,
+        )
+    return result
 
 
 def get_openai_client():
@@ -478,11 +693,16 @@ def run_game(
     max_ticks: int = NUM_TICKS,
     collect_trajectory: bool = False,
     trace_output_path: str | Path | None = None,
+    task_id: str = "cramped_room_single_delivery",
+    return_metrics: bool = False,
 ):
     mdp = OvercookedGridworld.from_layout_name(layout_name)
     state = mdp.get_standard_start_state()
     agents = [LLMAgent(0), LLMAgent(1)]
     score = 0
+    task = get_task_by_id(task_id) if task_id else None
+    executed_actions: list[str] = []
+    agent_histories: dict[str, list[str]] = {str(player_id): [] for player_id in range(len(agents))}
     trajectory = None
 
     if collect_trajectory:
@@ -493,17 +713,41 @@ def run_game(
                 "openai_model": OPENAI_MODEL,
                 "local_model": LOCAL_MODEL,
                 "max_ticks": max_ticks,
+                "task_id": task_id,
             },
             "layout": build_layout_snapshot(mdp),
             "frames": [build_frame(state, mdp, agents, tick=0, score=0)],
             "tick_events": [],
+            "symbolic_actions": [],
+            "agent_histories": agent_histories,
         }
 
     for tick in range(max_ticks):
+        before_state = state
         actions = [agents[0].act(state, mdp), agents[1].act(state, mdp)]
         state, info = mdp.get_state_transition(state, actions)
         score_delta = int(sum(info["sparse_reward_by_agent"]))
         score += score_delta
+        symbolic_actions = []
+        for player_id in range(len(agents)):
+            symbolic_action = classify_player_action(
+                before_state,
+                state,
+                player_id,
+                info.get("event_infos", {}),
+                actions[player_id],
+            )
+            if symbolic_action:
+                agent_key = str(player_id)
+                agent_histories[agent_key].append(symbolic_action)
+                executed_actions.append(symbolic_action)
+                symbolic_actions.append(
+                    {
+                        "playerId": player_id,
+                        "playerName": PLAYER_NAMES[player_id],
+                        "action": symbolic_action,
+                    }
+                )
 
         if collect_trajectory:
             decisions = [agent.last_decision for agent in agents]
@@ -516,22 +760,30 @@ def run_game(
                     "decisions": decisions,
                     "goal_changes": goal_changes,
                     "events": events,
+                    "symbolic_actions": symbolic_actions,
                     "scoreDelta": score_delta,
                     "scoreAfter": score,
                     "headline": build_headline(goal_changes, events, score_delta),
                 }
             )
             trajectory["frames"].append(build_frame(state, mdp, agents, tick + 1, score))
+            trajectory["symbolic_actions"].extend(
+                {**symbolic_action, "tick": tick + 1} for symbolic_action in symbolic_actions
+            )
 
         if tick % 50 == 0:
             print(f"    tick {tick:03d} | score {score}")
 
+    metrics = evaluate_task_trajectory(task, executed_actions, agent_histories=agent_histories) if task else {}
     if collect_trajectory:
         trajectory["score"] = score
         trajectory["soups_delivered"] = score // 20
+        trajectory["metrics"] = metrics
         if trace_output_path:
             save_trajectory(trajectory, Path(trace_output_path))
         return score, trajectory
+    if return_metrics:
+        return score, metrics
     return score
 
 
@@ -553,8 +805,10 @@ def parse_args():
     parser.add_argument("--openai-model", default=DEFAULT_OPENAI_MODEL, help="OpenAI model name for --backend openai")
     parser.add_argument("--local-model", default=DEFAULT_LOCAL_MODEL, help="Transformers model name for --backend local")
     parser.add_argument("--layout", choices=LAYOUTS, help="Run a single layout instead of the full benchmark suite")
+    parser.add_argument("--task-id", default="cramped_room_single_delivery", help="Task metadata to use for trajectory metrics")
     parser.add_argument("--max-ticks", type=int, default=NUM_TICKS, help="Number of game ticks to simulate")
     parser.add_argument("--collect-trajectory", action="store_true", help="Collect a detailed replay trajectory for the UI")
+    parser.add_argument("--print-metrics", action="store_true", help="Print TES/PC metrics without writing a replay trace")
     parser.add_argument("--trace-output", default=str(DEFAULT_TRACE_OUTPUT), help="Where to save replay JSON when --collect-trajectory is enabled")
     return parser.parse_args()
 
@@ -569,12 +823,27 @@ if __name__ == "__main__":
             max_ticks=args.max_ticks,
             collect_trajectory=args.collect_trajectory,
             trace_output_path=args.trace_output if args.collect_trajectory else None,
+            task_id=args.task_id,
+            return_metrics=args.print_metrics,
         )
         if args.collect_trajectory:
-            score, _ = result
+            score, trajectory = result
             print(f"\nSaved replay trace to {args.trace_output}")
+            metrics = trajectory.get("metrics", {})
+            if metrics:
+                pc = metrics.get("progress_completeness", {}).get("pc")
+                print(f"TES: {metrics.get('tes', 0):.3f}")
+                if pc is not None:
+                    print(f"PC: {pc:.3f}")
         else:
-            score = result
+            if args.print_metrics:
+                score, metrics = result
+                pc = metrics.get("progress_completeness", {}).get("pc")
+                print(f"TES: {metrics.get('tes', 0):.3f}")
+                if pc is not None:
+                    print(f"PC: {pc:.3f}")
+            else:
+                score = result
         print(f"Final score for {args.layout}: {score}")
     else:
         all_results = {}
