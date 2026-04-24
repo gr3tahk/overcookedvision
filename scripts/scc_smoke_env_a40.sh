@@ -1,22 +1,26 @@
 #!/bin/bash -l
+
+# Set SCC project
 #$ -P cs585
+
+# Name the job and output log
 #$ -N overcooked_smoke_a40
+#$ -j y
+#$ -o logs/$JOB_NAME.$JOB_ID.out
+
+# Request wall time, 4 CPUs, and 1 A40 GPU
 #$ -l h_rt=00:20:00
 #$ -pe omp 4
 #$ -l gpus=1
 #$ -l gpu_type=A40
-#$ -j y
-#$ -o logs/$JOB_NAME.$JOB_ID.out
 
-set -euo pipefail
-
+# Use the SCC academic machine learning environment
 module load miniconda
 module load academic-ml/spring-2026
-echo "CONDA_BASE=$(conda info --base)"
-conda info --envs
 conda activate spring-2026-pyt
 
 cd "$SGE_O_WORKDIR"
+mkdir -p logs results
 
 echo "HOST=$(hostname)"
 echo "PWD=$(pwd)"
