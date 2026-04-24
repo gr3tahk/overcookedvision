@@ -33,7 +33,7 @@ uv run python benchmark.py --pair vlm-vlm --layout cramped_room --max-ticks 80 -
 Run local text models, for example on SCC:
 
 ```bash
-uv run python benchmark.py --pair llm-llm --backend local --local-model Qwen/Qwen2.5-7B-Instruct --trials 3 --max-ticks 60 --experiment-output results/llm_qwen25_7b.json
+uv run python benchmark.py --pair llm-llm --backend local --local-model Qwen/Qwen3-8B --trials 3 --max-ticks 60 --experiment-output results/llm_qwen3_8b.json
 ```
 
 Run a small suite:

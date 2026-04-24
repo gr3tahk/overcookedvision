@@ -28,7 +28,7 @@ def parse_args():
     parser.add_argument("--backend", choices=["openai", "local"], default="openai", help="Inference backend for llm-llm agents.")
     parser.add_argument("--openai-model", default=DEFAULT_OPENAI_MODEL, help="OpenAI text model for --pair llm-llm.")
     parser.add_argument("--vision-model", default=DEFAULT_VISION_MODEL, help="OpenAI vision model for --pair vlm-vlm.")
-    parser.add_argument("--local-model", default="Qwen/Qwen2.5-7B-Instruct", help="Hugging Face model for --backend local.")
+    parser.add_argument("--local-model", default="Qwen/Qwen3-8B", help="Hugging Face model for --backend local.")
     parser.add_argument("--dtype", default="auto", help="Local model dtype: auto, float16, bfloat16, or float32.")
     parser.add_argument("--device-map", default="auto", help="Transformers device_map for local models.")
     parser.add_argument("--max-new-tokens", type=int, default=160, help="Local model generation token budget.")

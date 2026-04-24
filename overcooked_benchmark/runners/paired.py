@@ -153,7 +153,7 @@ def run_agent_pair(
     backend: str = "openai",
     text_model: str = DEFAULT_OPENAI_MODEL,
     vision_model: str = DEFAULT_VISION_MODEL,
-    local_model: str = "Qwen/Qwen2.5-7B-Instruct",
+    local_model: str = "Qwen/Qwen3-8B",
     dtype: str = "auto",
     device_map: str = "auto",
     max_new_tokens: int = 160,
