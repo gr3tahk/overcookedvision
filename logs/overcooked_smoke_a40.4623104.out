@@ -1,0 +1,152 @@
+-------------------------------------------------------------------------------
+To activate the conda environment in a batch script or in a terminal run the
+following command. For interactive sessions in SCC OnDemand place this command
+in the "Pre-Launch Command" field.
+
+To load the PyTorch-based environment run:
+
+    conda activate spring-2026-pyt
+    
+To load the Tensorflow-based environment run:
+
+    conda activate spring-2026-tf
+
+To load the Jax-based environment run:
+
+    conda activate spring-2026-jax
+    
+For information on using or cloning this conda environment visit:
+
+https://www.bu.edu/tech/support/research/software-and-programming/common-languages/python/python-ml/academic-machine-learning-environment
+-------------------------------------------------------------------------------
+
+HOST=scc-303
+PWD=/projectnb/cs585/projects/chungus/chung1
+PYTHON=/share/pkg.8/academic-ml/spring-2026/install/spring-2026-pyt/bin/python
+Python 3.12.11
+== torch check ==
+python: /share/pkg.8/academic-ml/spring-2026/install/spring-2026-pyt/bin/python
+torch: 2.9.1+cu128
+cuda available: True
+cuda version: 12.8
+gpu count: 1
+gpu: NVIDIA A40
+== install project ==
+Defaulting to user installation because normal site-packages is not writeable
+Obtaining file:///projectnb/cs585/projects/chungus/chung1
+  Installing build dependencies: started
+  Installing build dependencies: finished with status 'done'
+  Checking if build backend supports build_editable: started
+  Checking if build backend supports build_editable: finished with status 'done'
+  Getting requirements to build editable: started
+  Getting requirements to build editable: finished with status 'error'
+  error: subprocess-exited-with-error
+  
+  × Getting requirements to build editable did not run successfully.
+  │ exit code: 1
+  ╰─> [14 lines of output]
+      error: Multiple top-level packages discovered in a flat-layout: ['logs', 'results', 'overcooked_benchmark'].
+      
+      To avoid accidental inclusion of unwanted files or directories,
+      setuptools will not proceed with this build.
+      
+      If you are trying to create a single distribution with multiple packages
+      on purpose, you should not rely on automatic discovery.
+      Instead, consider the following options:
+      
+      1. set up custom discovery (`find` directive with `include` or `exclude`)
+      2. use a `src-layout`
+      3. explicitly set `py_modules` or `packages` with a list of names
+      
+      To find more information, look for "package discovery" on setuptools docs.
+      [end of output]
+  
+  note: This error originates from a subprocess, and is likely not a problem with pip.
+ERROR: Failed to build 'file:///projectnb/cs585/projects/chungus/chung1' when getting requirements to build editable
+== tests ==
+E......E...E
+======================================================================
+ERROR: test_experiment (unittest.loader._FailedTest.test_experiment)
+----------------------------------------------------------------------
+ImportError: Failed to import test module: test_experiment
+Traceback (most recent call last):
+  File "/share/pkg.8/academic-ml/spring-2026/install/spring-2026-pyt/lib/python3.12/unittest/loader.py", line 396, in _find_test_path
+    module = self._get_module_from_name(name)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/share/pkg.8/academic-ml/spring-2026/install/spring-2026-pyt/lib/python3.12/unittest/loader.py", line 339, in _get_module_from_name
+    __import__(name)
+  File "/projectnb/cs585/projects/chungus/chung1/tests/test_experiment.py", line 3, in <module>
+    from overcooked_benchmark.agents.base import parse_agent_response
+  File "/projectnb/cs585/projects/chungus/chung1/overcooked_benchmark/agents/__init__.py", line 1, in <module>
+    from overcooked_benchmark.agents.base import AgentDecision, AgentObservation, BenchmarkAgent
+  File "/projectnb/cs585/projects/chungus/chung1/overcooked_benchmark/agents/base.py", line 8, in <module>
+    from overcooked_ai_py.mdp.actions import Action
+ModuleNotFoundError: No module named 'overcooked_ai_py'
+
+
+======================================================================
+ERROR: test_phase (unittest.loader._FailedTest.test_phase)
+----------------------------------------------------------------------
+ImportError: Failed to import test module: test_phase
+Traceback (most recent call last):
+  File "/share/pkg.8/academic-ml/spring-2026/install/spring-2026-pyt/lib/python3.12/unittest/loader.py", line 396, in _find_test_path
+    module = self._get_module_from_name(name)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/share/pkg.8/academic-ml/spring-2026/install/spring-2026-pyt/lib/python3.12/unittest/loader.py", line 339, in _get_module_from_name
+    __import__(name)
+  File "/projectnb/cs585/projects/chungus/chung1/tests/test_phase.py", line 3, in <module>
+    from overcooked_ai_py.mdp.actions import Action
+ModuleNotFoundError: No module named 'overcooked_ai_py'
+
+
+======================================================================
+ERROR: test_task_benchmark (unittest.loader._FailedTest.test_task_benchmark)
+----------------------------------------------------------------------
+ImportError: Failed to import test module: test_task_benchmark
+Traceback (most recent call last):
+  File "/share/pkg.8/academic-ml/spring-2026/install/spring-2026-pyt/lib/python3.12/unittest/loader.py", line 396, in _find_test_path
+    module = self._get_module_from_name(name)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/share/pkg.8/academic-ml/spring-2026/install/spring-2026-pyt/lib/python3.12/unittest/loader.py", line 339, in _get_module_from_name
+    __import__(name)
+  File "/projectnb/cs585/projects/chungus/chung1/tests/test_task_benchmark.py", line 3, in <module>
+    from overcooked_ai_py.mdp.actions import Action
+ModuleNotFoundError: No module named 'overcooked_ai_py'
+
+
+----------------------------------------------------------------------
+Ran 12 tests in 0.001s
+
+FAILED (errors=3)
+== scripted benchmark smoke ==
+Traceback (most recent call last):
+  File "/projectnb/cs585/projects/chungus/chung1/benchmark.py", line 1, in <module>
+    from overcooked_benchmark.cli import main
+  File "/projectnb/cs585/projects/chungus/chung1/overcooked_benchmark/cli.py", line 5, in <module>
+    from overcooked_benchmark.config import (
+  File "/projectnb/cs585/projects/chungus/chung1/overcooked_benchmark/config.py", line 5, in <module>
+    from overcooked_ai_py.mdp.actions import Action
+ModuleNotFoundError: No module named 'overcooked_ai_py'
+== summary ==
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "/projectnb/cs585/projects/chungus/chung1/overcooked_benchmark/summarize.py", line 124, in <module>
+    main()
+  File "/projectnb/cs585/projects/chungus/chung1/overcooked_benchmark/summarize.py", line 120, in main
+    print(summarize_files(args.paths))
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/projectnb/cs585/projects/chungus/chung1/overcooked_benchmark/summarize.py", line 108, in summarize_files
+    rows = load_result_rows(paths)
+           ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/projectnb/cs585/projects/chungus/chung1/overcooked_benchmark/summarize.py", line 48, in load_result_rows
+    payload = json.loads(Path(path).read_text())
+                         ^^^^^^^^^^^^^^^^^^^^^^
+  File "/share/pkg.8/academic-ml/spring-2026/install/spring-2026-pyt/lib/python3.12/pathlib.py", line 1027, in read_text
+    with self.open(mode='r', encoding=encoding, errors=errors) as f:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/share/pkg.8/academic-ml/spring-2026/install/spring-2026-pyt/lib/python3.12/pathlib.py", line 1013, in open
+    return io.open(self, mode, buffering, encoding, errors, newline)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: 'results/smoke_scripted.json'
+DONE

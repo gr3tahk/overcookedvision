@@ -10,3 +10,4 @@ game_trajectories/
 llm_results.json
 replay-ui/node_modules/
 replay-ui/dist/
+hf_cache/

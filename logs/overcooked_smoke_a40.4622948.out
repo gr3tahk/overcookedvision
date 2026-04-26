@@ -1,0 +1,5 @@
+
+EnvironmentNameNotFound: Could not find conda environment: spring-2026-pyt
+You can list all discoverable environments with `conda info --envs`.
+
+
