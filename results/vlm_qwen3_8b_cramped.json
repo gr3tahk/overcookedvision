@@ -1,0 +1,456 @@
+{
+  "pair": "vlm-vlm",
+  "backend": "local",
+  "model": "Qwen/Qwen3-VL-8B-Instruct",
+  "trials": 3,
+  "max_ticks": 60,
+  "task_ids": [
+    "cramped_room_single_delivery"
+  ],
+  "results": [
+    {
+      "pair": "vlm-vlm",
+      "layout": "cramped_room",
+      "task_id": "cramped_room_single_delivery",
+      "score": 0,
+      "soups_delivered": 0,
+      "success": false,
+      "metrics": {
+        "tes": 0.36363636363636365,
+        "best_reference_id": "single_agent_delivery",
+        "best_reference_actions": [
+          "pickup_onion",
+          "place_onion_in_pot",
+          "pickup_onion",
+          "place_onion_in_pot",
+          "pickup_onion",
+          "place_onion_in_pot",
+          "pickup_dish",
+          "pickup_soup",
+          "deliver_soup"
+        ],
+        "reference_scores": [
+          {
+            "id": "single_agent_delivery",
+            "tes": 0.36363636363636365,
+            "actions": [
+              "pickup_onion",
+              "place_onion_in_pot",
+              "pickup_onion",
+              "place_onion_in_pot",
+              "pickup_onion",
+              "place_onion_in_pot",
+              "pickup_dish",
+              "pickup_soup",
+              "deliver_soup"
+            ]
+          }
+        ],
+        "progress_completeness": {
+          "pc": 0.3666666666666667,
+          "agents": {
+            "0": {
+              "tes": 0.4,
+              "best_reference_id": "p0_onion_focus",
+              "best_reference_actions": [
+                "pickup_onion",
+                "place_onion_in_pot",
+                "pickup_onion",
+                "place_onion_in_pot"
+              ],
+              "reference_scores": [
+                {
+                  "id": "p0_all_steps",
+                  "tes": 0.2,
+                  "actions": [
+                    "pickup_onion",
+                    "place_onion_in_pot",
+                    "pickup_onion",
+                    "place_onion_in_pot",
+                    "pickup_onion",
+                    "place_onion_in_pot",
+                    "pickup_dish",
+                    "pickup_soup",
+                    "deliver_soup"
+                  ]
+                },
+                {
+                  "id": "p0_onion_focus",
+                  "tes": 0.4,
+                  "actions": [
+                    "pickup_onion",
+                    "place_onion_in_pot",
+                    "pickup_onion",
+                    "place_onion_in_pot"
+                  ]
+                }
+              ]
+            },
+            "1": {
+              "tes": 0.3333333333333333,
+              "best_reference_id": "p1_onion_plate_delivery",
+              "best_reference_actions": [
+                "pickup_onion",
+                "place_onion_in_pot",
+                "pickup_dish",
+                "pickup_soup",
+                "deliver_soup"
+              ],
+              "reference_scores": [
+                {
+                  "id": "p1_all_steps",
+                  "tes": 0.2,
+                  "actions": [
+                    "pickup_onion",
+                    "place_onion_in_pot",
+                    "pickup_onion",
+                    "place_onion_in_pot",
+                    "pickup_onion",
+                    "place_onion_in_pot",
+                    "pickup_dish",
+                    "pickup_soup",
+                    "deliver_soup"
+                  ]
+                },
+                {
+                  "id": "p1_onion_plate_delivery",
+                  "tes": 0.3333333333333333,
+                  "actions": [
+                    "pickup_onion",
+                    "place_onion_in_pot",
+                    "pickup_dish",
+                    "pickup_soup",
+                    "deliver_soup"
+                  ]
+                }
+              ]
+            }
+          }
+        },
+        "invalid_action_count": 0,
+        "success": false,
+        "ticks": 60
+      },
+      "agent_histories": {
+        "0": [
+          "pickup_onion"
+        ],
+        "1": [
+          "pickup_onion"
+        ]
+      },
+      "symbolic_actions": [
+        "pickup_onion",
+        "pickup_onion"
+      ],
+      "trace_path": "results/qwen3_vl_8b_traces/vlm-vlm_local_cramped_room_single_delivery_trial0.json",
+      "trial": 0,
+      "model": "Qwen/Qwen3-VL-8B-Instruct",
+      "max_ticks": 60,
+      "flat_metrics": {
+        "success": false,
+        "score": 0,
+        "tes": 0.36363636363636365,
+        "pc": 0.3666666666666667,
+        "ticks": 60,
+        "invalid_action_count": 0
+      }
+    },
+    {
+      "pair": "vlm-vlm",
+      "layout": "cramped_room",
+      "task_id": "cramped_room_single_delivery",
+      "score": 0,
+      "soups_delivered": 0,
+      "success": false,
+      "metrics": {
+        "tes": 0.36363636363636365,
+        "best_reference_id": "single_agent_delivery",
+        "best_reference_actions": [
+          "pickup_onion",
+          "place_onion_in_pot",
+          "pickup_onion",
+          "place_onion_in_pot",
+          "pickup_onion",
+          "place_onion_in_pot",
+          "pickup_dish",
+          "pickup_soup",
+          "deliver_soup"
+        ],
+        "reference_scores": [
+          {
+            "id": "single_agent_delivery",
+            "tes": 0.36363636363636365,
+            "actions": [
+              "pickup_onion",
+              "place_onion_in_pot",
+              "pickup_onion",
+              "place_onion_in_pot",
+              "pickup_onion",
+              "place_onion_in_pot",
+              "pickup_dish",
+              "pickup_soup",
+              "deliver_soup"
+            ]
+          }
+        ],
+        "progress_completeness": {
+          "pc": 0.3666666666666667,
+          "agents": {
+            "0": {
+              "tes": 0.4,
+              "best_reference_id": "p0_onion_focus",
+              "best_reference_actions": [
+                "pickup_onion",
+                "place_onion_in_pot",
+                "pickup_onion",
+                "place_onion_in_pot"
+              ],
+              "reference_scores": [
+                {
+                  "id": "p0_all_steps",
+                  "tes": 0.2,
+                  "actions": [
+                    "pickup_onion",
+                    "place_onion_in_pot",
+                    "pickup_onion",
+                    "place_onion_in_pot",
+                    "pickup_onion",
+                    "place_onion_in_pot",
+                    "pickup_dish",
+                    "pickup_soup",
+                    "deliver_soup"
+                  ]
+                },
+                {
+                  "id": "p0_onion_focus",
+                  "tes": 0.4,
+                  "actions": [
+                    "pickup_onion",
+                    "place_onion_in_pot",
+                    "pickup_onion",
+                    "place_onion_in_pot"
+                  ]
+                }
+              ]
+            },
+            "1": {
+              "tes": 0.3333333333333333,
+              "best_reference_id": "p1_onion_plate_delivery",
+              "best_reference_actions": [
+                "pickup_onion",
+                "place_onion_in_pot",
+                "pickup_dish",
+                "pickup_soup",
+                "deliver_soup"
+              ],
+              "reference_scores": [
+                {
+                  "id": "p1_all_steps",
+                  "tes": 0.2,
+                  "actions": [
+                    "pickup_onion",
+                    "place_onion_in_pot",
+                    "pickup_onion",
+                    "place_onion_in_pot",
+                    "pickup_onion",
+                    "place_onion_in_pot",
+                    "pickup_dish",
+                    "pickup_soup",
+                    "deliver_soup"
+                  ]
+                },
+                {
+                  "id": "p1_onion_plate_delivery",
+                  "tes": 0.3333333333333333,
+                  "actions": [
+                    "pickup_onion",
+                    "place_onion_in_pot",
+                    "pickup_dish",
+                    "pickup_soup",
+                    "deliver_soup"
+                  ]
+                }
+              ]
+            }
+          }
+        },
+        "invalid_action_count": 0,
+        "success": false,
+        "ticks": 60
+      },
+      "agent_histories": {
+        "0": [
+          "pickup_onion"
+        ],
+        "1": [
+          "pickup_onion"
+        ]
+      },
+      "symbolic_actions": [
+        "pickup_onion",
+        "pickup_onion"
+      ],
+      "trace_path": "results/qwen3_vl_8b_traces/vlm-vlm_local_cramped_room_single_delivery_trial1.json",
+      "trial": 1,
+      "model": "Qwen/Qwen3-VL-8B-Instruct",
+      "max_ticks": 60,
+      "flat_metrics": {
+        "success": false,
+        "score": 0,
+        "tes": 0.36363636363636365,
+        "pc": 0.3666666666666667,
+        "ticks": 60,
+        "invalid_action_count": 0
+      }
+    },
+    {
+      "pair": "vlm-vlm",
+      "layout": "cramped_room",
+      "task_id": "cramped_room_single_delivery",
+      "score": 0,
+      "soups_delivered": 0,
+      "success": false,
+      "metrics": {
+        "tes": 0.36363636363636365,
+        "best_reference_id": "single_agent_delivery",
+        "best_reference_actions": [
+          "pickup_onion",
+          "place_onion_in_pot",
+          "pickup_onion",
+          "place_onion_in_pot",
+          "pickup_onion",
+          "place_onion_in_pot",
+          "pickup_dish",
+          "pickup_soup",
+          "deliver_soup"
+        ],
+        "reference_scores": [
+          {
+            "id": "single_agent_delivery",
+            "tes": 0.36363636363636365,
+            "actions": [
+              "pickup_onion",
+              "place_onion_in_pot",
+              "pickup_onion",
+              "place_onion_in_pot",
+              "pickup_onion",
+              "place_onion_in_pot",
+              "pickup_dish",
+              "pickup_soup",
+              "deliver_soup"
+            ]
+          }
+        ],
+        "progress_completeness": {
+          "pc": 0.3666666666666667,
+          "agents": {
+            "0": {
+              "tes": 0.4,
+              "best_reference_id": "p0_onion_focus",
+              "best_reference_actions": [
+                "pickup_onion",
+                "place_onion_in_pot",
+                "pickup_onion",
+                "place_onion_in_pot"
+              ],
+              "reference_scores": [
+                {
+                  "id": "p0_all_steps",
+                  "tes": 0.2,
+                  "actions": [
+                    "pickup_onion",
+                    "place_onion_in_pot",
+                    "pickup_onion",
+                    "place_onion_in_pot",
+                    "pickup_onion",
+                    "place_onion_in_pot",
+                    "pickup_dish",
+                    "pickup_soup",
+                    "deliver_soup"
+                  ]
+                },
+                {
+                  "id": "p0_onion_focus",
+                  "tes": 0.4,
+                  "actions": [
+                    "pickup_onion",
+                    "place_onion_in_pot",
+                    "pickup_onion",
+                    "place_onion_in_pot"
+                  ]
+                }
+              ]
+            },
+            "1": {
+              "tes": 0.3333333333333333,
+              "best_reference_id": "p1_onion_plate_delivery",
+              "best_reference_actions": [
+                "pickup_onion",
+                "place_onion_in_pot",
+                "pickup_dish",
+                "pickup_soup",
+                "deliver_soup"
+              ],
+              "reference_scores": [
+                {
+                  "id": "p1_all_steps",
+                  "tes": 0.2,
+                  "actions": [
+                    "pickup_onion",
+                    "place_onion_in_pot",
+                    "pickup_onion",
+                    "place_onion_in_pot",
+                    "pickup_onion",
+                    "place_onion_in_pot",
+                    "pickup_dish",
+                    "pickup_soup",
+                    "deliver_soup"
+                  ]
+                },
+                {
+                  "id": "p1_onion_plate_delivery",
+                  "tes": 0.3333333333333333,
+                  "actions": [
+                    "pickup_onion",
+                    "place_onion_in_pot",
+                    "pickup_dish",
+                    "pickup_soup",
+                    "deliver_soup"
+                  ]
+                }
+              ]
+            }
+          }
+        },
+        "invalid_action_count": 0,
+        "success": false,
+        "ticks": 60
+      },
+      "agent_histories": {
+        "0": [
+          "pickup_onion"
+        ],
+        "1": [
+          "pickup_onion"
+        ]
+      },
+      "symbolic_actions": [
+        "pickup_onion",
+        "pickup_onion"
+      ],
+      "trace_path": "results/qwen3_vl_8b_traces/vlm-vlm_local_cramped_room_single_delivery_trial2.json",
+      "trial": 2,
+      "model": "Qwen/Qwen3-VL-8B-Instruct",
+      "max_ticks": 60,
+      "flat_metrics": {
+        "success": false,
+        "score": 0,
+        "tes": 0.36363636363636365,
+        "pc": 0.3666666666666667,
+        "ticks": 60,
+        "invalid_action_count": 0
+      }
+    }
+  ]
+}
